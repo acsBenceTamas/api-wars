@@ -1,4 +1,6 @@
-<nav class="navbar navbar-expand-sm navbar-light bg-light">
+<script src="{{ url_for('static', filename='js/login.js') }}" defer></script>
+
+<nav class="navbar navbar-expand-sm navbar-light bg-light sticky-top">
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -12,14 +14,115 @@
         <a class="nav-link" href="#">Vote statistics</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#">Registration</a>
+        <button class="nav-link btn btn-link" id="navbar-register" data-toggle="modal" data-target="#registerModal">Registration</button>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#">Login</a>
+        <button class="nav-link btn btn-link" id="navbar-login" data-toggle="modal" data-target="#loginModal">Login</button>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#">Logout</a>
+        <button class="nav-link btn btn-link" id="navbar-logout" onclick="logout()">Logout</button>
       </li>
     </ul>
+      <div id="navbar-username">{% if username %}Logged in as {{ username }}{% else %}Not logged in{% endif %}</div>
   </div>
 </nav>
+
+<div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loginModalLabel">Login</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form name="login-modal-form" id="login-modal-form">
+                    <label>
+                        Username:<br>
+                        <input id="login-modal-username" type="text" size="32" required>
+                    </label>
+                    <label>
+                        Password:<br>
+                        <input id="login-modal-password" type="password" size="32" required>
+                    </label>
+                    <div id="login-modal-error" class="alert" role="alert"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" id="login-modal-submit" onclick="submitLogin()">Login</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="registerModal" tabindex="-1" role="dialog" aria-labelledby="registerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loginModalLabel">Register</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form name="register-modal-form" id="register-modal-form">
+                    <label>
+                        Username:<br>
+                        <input id="register-modal-username" type="text" size="32" required>
+                    </label>
+                    <label>
+                        Password:<br>
+                        <input id="register-modal-password" type="password" size="32" required>
+                    </label>
+                    <label>
+                        <input id="register-modal-auto-login" type="checkbox" checked>
+                        Login after registration
+                    </label>
+                    <div id="register-modal-error" class="alert" role="alert"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" id="login-modal-submit" onclick="submitRegister()">Register</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="successful-login" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="alert alert-success" role="alert">
+                    <h1>Login successful!</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="successful-registration" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="alert alert-success" role="alert">
+                    <h1>Registration successful!</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="successful-logout" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="alert alert-success" role="alert">
+                    <h1>Logout successful!</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
