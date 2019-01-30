@@ -15,12 +15,13 @@ ERROR_USERNAME_ALREADY_EXISTS = -2
 ERROR_USERNAME_HAS_INVALID_CHARACTERS = -3
 ERROR_INVALID_PASSWORD = -4
 ERROR_NOT_LOGGED_IN = -5
-ERROR_LOGIN_REQUIRED = -6
+ERROR_NO_STATISTICS_AVAILABLE = -6
 SUCCESS_REGISTRATION = 1
 SUCCESS_LOGOUT = 2
 
 ##### PLANETS CONSTANTS #####
 ERROR_ALREADY_VOTED = -1
+ERROR_LOGIN_REQUIRED = -6
 SUCCESS_VOTE_ADDED = 1
 
 
@@ -44,14 +45,17 @@ def upvote_planet():
     if session.get("user_id"):
         try:
             data_manager.make_vote(int(request.form["planet_id"]), request.form["planet_name"], session["user_id"], datetime.now())
-            print("successful vote")
             return json.dumps(SUCCESS_VOTE_ADDED)
         except:
-            print("already voted")
             return json.dumps(ERROR_ALREADY_VOTED)
     else:
-        print("not logged in")
         return  json.dumps(ERROR_LOGIN_REQUIRED)
+
+
+@app.route('/vote-statistics/')
+def vote_statistics():
+    statistics = data_manager.get_vote_statistics()
+    return json.dumps(statistics)
 
 
 @app.route('/login/', methods=["POST"])

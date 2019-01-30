@@ -81,7 +81,7 @@ function populatePlanetList( data )
         row.classList.add('row');
         row.classList.add('planet-row');
         row.dataset.planetInfo = JSON.stringify({name: planet.name, id: getIdFromURL(planet.url)});
-        if (secondaryRow) row.classList.add('bg-light');
+        if (secondaryRow) {row.classList.add('bg-secondary')} else {row.classList.add('bg-light')}
         secondaryRow = !secondaryRow;
         row.appendChild(constructTextColumn(planet.name));
         row.appendChild(constructTextColumn(
@@ -142,7 +142,7 @@ function constructTextColumn(content, relativeWidth=1, collapseThreshold='xl')
 {
     let column = document.createElement('div');
     column.classList.add(getColType(relativeWidth, collapseThreshold));
-    column.classList.add('col');
+    column.classList.add('column');
     column.innerText = content.toString();
     return column
 }
@@ -151,7 +151,7 @@ function constructButtonColumn(title, classList = [], dataset={}, relativeWidth=
 {
     let column = document.createElement('div');
     column.classList.add(getColType(relativeWidth, collapseThreshold));
-    column.classList.add('col');
+    column.classList.add('column');
     let button = document.createElement('button');
     button.innerText = title;
     button.disabled = disabled;
@@ -199,7 +199,7 @@ function planetListClick(event) {
             document.getElementById('residentsModalLabel').innerText = "";
         } else if (event.target.classList.contains('btn-vote-planet')) {
             if (document.getElementById('login-info'))
-            upvotePlanet( event.target.dataset.name, Number(event.target.dataset.id) );
+            upvotePlanet( JSON.parse(event.target.dataset.name), Number(event.target.dataset.id) );
         }
     }
 }
@@ -249,14 +249,16 @@ function updateOnLoginLogout() {
 function removeVoteColumn() {
     let voteButtons = document.getElementsByClassName('btn-vote-planet');
     for (let i = voteButtons.length-1; i >= 0; i-- ) {
-        voteButtons[i].closest(".col").remove()
+        voteButtons[i].closest(".column").remove()
     }
     document.getElementById('vote-column-header').remove()
 }
 
 function addVoteColumn() {
     if (!document.getElementById('vote-column-header')) {
-        document.getElementById('planet-list-header').appendChild(constructTextColumn(""));
+        let header = constructTextColumn("");
+        header.id = 'vote-column-header';
+        document.getElementById('planet-list-header').appendChild(header);
         for (let row of document.querySelectorAll('#planet-list .planet-row')) {
             let planet = JSON.parse(row.dataset.planetInfo);
             row.appendChild(constructButtonColumn(

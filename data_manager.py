@@ -46,6 +46,7 @@ def save_new_user(cursor, username, password):
         )
     )
 
+
 @connection_handler
 def check_vote(cursor, user_id, planet_id):
     cursor.execute(
@@ -62,6 +63,7 @@ def check_vote(cursor, user_id, planet_id):
     print(cursor.fetchone())
     return cursor.fetchone()
 
+
 @connection_handler
 def make_vote(cursor, planet_id, planet_name, user_id, submission_time):
     cursor.execute(
@@ -77,3 +79,15 @@ def make_vote(cursor, planet_id, planet_name, user_id, submission_time):
             submission_time = sql.Literal(submission_time),
         )
     )
+
+
+@connection_handler
+def get_vote_statistics(cursor):
+    cursor.execute(
+        """
+        SELECT planet_name AS name , COUNT(planet_name) AS vote_count FROM "planet-votes"
+        GROUP BY planet_name
+        ORDER BY planet_name ASC
+        """
+    )
+    return cursor.fetchall()

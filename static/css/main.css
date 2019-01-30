@@ -11,3 +11,9 @@
     top: 50%;
     left: 50%;
 }
+
+body {
+    background-image: url('/static/images/DS_BG.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+}

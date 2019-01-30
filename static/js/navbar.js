@@ -3,6 +3,7 @@ const ERROR_USERNAME_ALREADY_EXISTS = -2;
 const ERROR_USERNAME_HAS_INVALID_CHARACTERS = -3;
 const ERROR_INVALID_PASSWORD = -4;
 const ERROR_NOT_LOGGED_IN = -5;
+const ERROR_NO_STATISTICS_AVAILABLE = -6;
 const SUCCESS_REGISTRATION = 1;
 const SUCCESS_LOGOUT = 2;
 
@@ -74,6 +75,7 @@ function handleRegister( response ) {
         $('#successful-registration').modal();
     } else if (typeof response === "object") {
         document.getElementById('navbar-username').innerText = `Logged in as ${response.username.toString()}`;
+        document.getElementById('login-info').dataset.username = response.username.toString();
         $('#registerModal').modal('hide');
         $('#successful-login').modal();
     }
@@ -96,6 +98,37 @@ function handleLogout( response ) {
     } else if (response === ERROR_NOT_LOGGED_IN) {
         alert("Not currently logged in")
     }
+}
+
+function getVoteStatistics() {
+    fetch('/vote-statistics/')
+        .then((response) => response.json())
+        .then((variable) => handleVoteStatistics(variable))
+}
+
+function handleVoteStatistics( response ) {
+    clearVoteStatistics();
+    if (response === ERROR_NO_STATISTICS_AVAILABLE) {
+        console.log("No vote statistics available");
+    } else if (typeof response === "object") {
+        let voteStatisticsList = document.getElementById('vote-statistics-list');
+        let secondaryRow = true;
+        for (let planet of response) {
+            let row = document.createElement('div');
+            row.classList.add('row');
+            row.classList.add('vote-row');
+            if (secondaryRow) row.classList.add('bg-secondary');
+            secondaryRow = !secondaryRow;
+            row.appendChild(constructTextColumn(planet.name,0,'sm'));
+            row.appendChild(constructTextColumn(planet.vote_count, 0,'sm'));
+            voteStatisticsList.appendChild(row);
+        }
+    }
+    $('#votesModal').modal();
+}
+
+function clearVoteStatistics() {
+    let voteRows = document.getElementsByClassName('vote-row')
 }
 
 main();
