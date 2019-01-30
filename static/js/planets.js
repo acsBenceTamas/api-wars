@@ -1,3 +1,7 @@
+const ERROR_ALREADY_VOTED = -1;
+const SUCCESS_VOTE_ADDED = 1;
+const ERROR_LOGIN_REQUIRED = -6;
+
 function listPlanets( apiTarget )
 {
     const apiPage = new URL(apiTarget).searchParams.get("page");
@@ -31,11 +35,14 @@ function listResidents( apiTargetList, planetName )
 function populateResidentList( data, planetName )
 {
     clearResidentList();
+    let secondaryRow = true;
     for (let resident of data) {
         let row = document.createElement('div');
         row.classList.add('row');
         row.classList.add('resident-row');
-        row.appendChild(constructTextColumn(resident.name, 2));
+        if (secondaryRow) row.classList.add('bg-secondary');
+        secondaryRow = !secondaryRow;
+        row.appendChild(constructTextColumn(resident.name, 0));
         row.appendChild(constructTextColumn(
             isNaN(resident.height) ?
                 "unknown":
@@ -68,16 +75,20 @@ function populatePlanetList( data )
     let planetList = document.getElementById('planet-list');
     planetList.dataset.next = JSON.stringify(data.next);
     planetList.dataset.previous = JSON.stringify(data.previous);
+    let secondaryRow = true;
     for (let planet of data.results) {
         let row = document.createElement('div');
         row.classList.add('row');
         row.classList.add('planet-row');
+        row.dataset.planetInfo = JSON.stringify({name: planet.name, id: getIdFromURL(planet.url)});
+        if (secondaryRow) row.classList.add('bg-light');
+        secondaryRow = !secondaryRow;
         row.appendChild(constructTextColumn(planet.name));
         row.appendChild(constructTextColumn(
             planet.diameter.includes("unknown") ? "unknown" :
             `${Number(planet.diameter).toLocaleString()} km`));
-        row.appendChild(constructTextColumn(planet.climate));
-        row.appendChild(constructTextColumn(planet.terrain,3));
+        row.appendChild(constructTextColumn(planet.climate,0));
+        row.appendChild(constructTextColumn(planet.terrain,0));
         row.appendChild(constructTextColumn(
             planet.surface_water.includes("unknown") ? "unknown" :
                 `${planet.surface_water}%`,
@@ -96,11 +107,13 @@ function populatePlanetList( data )
         } else {
             row.appendChild(constructTextColumn("No known residents", 2));
         }
-        row.appendChild(constructButtonColumn(
-            `Vote`,
-            ["btn-vote-planet", "btn", "btn-sm", "btn-secondary"],
-            {planetUrl: getIdFromURL(planet.url)}
-            ));
+        if (document.getElementById('server-data-container').dataset.user) {
+            row.appendChild(constructButtonColumn(
+                `Vote`,
+                ["btn-vote-planet", "btn", "btn-sm", "btn-secondary"],
+                {name: planet.name, id: getIdFromURL(planet.url)}
+                ));
+        }
         document.getElementById('planet-list').appendChild(row);
     }
     stopLoading();
@@ -128,7 +141,8 @@ function removeElementsByClassName( className )
 function constructTextColumn(content, relativeWidth=1, collapseThreshold='xl')
 {
     let column = document.createElement('div');
-    column.classList.add(`col-${collapseThreshold}-${relativeWidth}`);
+    column.classList.add(getColType(relativeWidth, collapseThreshold));
+    column.classList.add('col');
     column.innerText = content.toString();
     return column
 }
@@ -136,7 +150,8 @@ function constructTextColumn(content, relativeWidth=1, collapseThreshold='xl')
 function constructButtonColumn(title, classList = [], dataset={}, relativeWidth=1, collapseThreshold='xl', disabled= false)
 {
     let column = document.createElement('div');
-    column.classList.add(`col-${collapseThreshold}-${relativeWidth}`);
+    column.classList.add(getColType(relativeWidth, collapseThreshold));
+    column.classList.add('col');
     let button = document.createElement('button');
     button.innerText = title;
     button.disabled = disabled;
@@ -144,6 +159,12 @@ function constructButtonColumn(title, classList = [], dataset={}, relativeWidth=
     for (let classItem of classList) button.classList.add(classItem);
     column.appendChild(button);
     return column
+}
+
+function getColType(relativeWidth, collapseThreshold) {
+    let colType = `col-${collapseThreshold}`;
+    if (relativeWidth !== 0) colType += `-${relativeWidth}`;
+    return colType
 }
 
 function startLoading() {
@@ -176,13 +197,94 @@ function planetListClick(event) {
         } else if (event.target.classList.contains('btn-residents')) {
             listResidents( JSON.parse(event.target.dataset.residents), JSON.parse(event.target.dataset.name) );
             document.getElementById('residentsModalLabel').innerText = "";
+        } else if (event.target.classList.contains('btn-vote-planet')) {
+            if (document.getElementById('login-info'))
+            upvotePlanet( event.target.dataset.name, Number(event.target.dataset.id) );
+        }
+    }
+}
+
+function upvotePlanet( planetName, planetId ) {
+    let upvote = new FormData();
+    upvote.set("planet_name", planetName);
+    upvote.set("planet_id", planetId);
+    fetch(
+        '/upvote-planet/',
+        {
+            method: "POST",
+            body: upvote
+        }
+        )
+        .then((response) => response.json())
+        .then((variable) => handleUpvote(variable));
+}
+
+function handleUpvote( response ) {
+    let message = document.getElementById('planet-upvote-message');
+    if (response === ERROR_ALREADY_VOTED) {
+        message.innerText = "You already voted on this planet";
+        message.classList.add('alert-warning');
+        message.classList.remove('alert-success');
+    } else if (response === SUCCESS_VOTE_ADDED) {
+        message.innerText = "Your vote has been registered!";
+        message.classList.add('alert-success');
+        message.classList.remove('alert-warning');
+    } else if (response === ERROR_LOGIN_REQUIRED) {
+        message.innerText = "Login required to vote!";
+        message.classList.add('alert-warning');
+        message.classList.remove('alert-success');
+    }
+    $('#planet-upvote-message-modal').modal();
+}
+
+function updateOnLoginLogout() {
+    let loginInfo = document.getElementById('login-info');
+    if (loginInfo.dataset.username) {
+        addVoteColumn()
+    } else {
+        removeVoteColumn();
+    }
+}
+
+function removeVoteColumn() {
+    let voteButtons = document.getElementsByClassName('btn-vote-planet');
+    for (let i = voteButtons.length-1; i >= 0; i-- ) {
+        voteButtons[i].closest(".col").remove()
+    }
+    document.getElementById('vote-column-header').remove()
+}
+
+function addVoteColumn() {
+    if (!document.getElementById('vote-column-header')) {
+        document.getElementById('planet-list-header').appendChild(constructTextColumn(""));
+        for (let row of document.querySelectorAll('#planet-list .planet-row')) {
+            let planet = JSON.parse(row.dataset.planetInfo);
+            row.appendChild(constructButtonColumn(
+                `Vote`,
+                ["btn-vote-planet", "btn", "btn-sm", "btn-secondary"],
+                {name: planet.name, id: planet.id}
+                ));
         }
     }
 }
 
 function getIdFromURL( url ) {
     let parts = url.split("/");
-    return parts[parts.length-2];
+    return Number(parts[parts.length-2]);
+}
+
+function watchAttributeChanges( element, handler ) {
+    let observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+        if (mutation.type.toString() === "attributes") {
+            handler()
+        }
+        });
+    });
+
+    observer.observe(element, {
+    attributes: true
+    });
 }
 
 function main()
@@ -190,6 +292,8 @@ function main()
     document.getElementById('planet-list').addEventListener('click', planetListClick);
     const dataContainer = document.getElementById("server-data-container");
     listPlanets(`https://swapi.co/api/planets/?page=${dataContainer.dataset.page ? dataContainer.dataset.page: 1}`);
+    let loginInfo = document.getElementById('login-info');
+    watchAttributeChanges( loginInfo, updateOnLoginLogout );
 }
 
 main();

@@ -45,3 +45,35 @@ def save_new_user(cursor, username, password):
             password=sql.Literal(password)
         )
     )
+
+@connection_handler
+def check_vote(cursor, user_id, planet_id):
+    cursor.execute(
+        sql.SQL(
+            """
+            SELECT COUNT(*) FROM "planet-votes"
+            WHERE user_id = {user_id} AND planet_id = {planet_id}
+            """
+        ).format(
+            user_id=sql.Literal(user_id),
+            planet_id=sql.Literal(planet_id),
+        )
+    )
+    print(cursor.fetchone())
+    return cursor.fetchone()
+
+@connection_handler
+def make_vote(cursor, planet_id, planet_name, user_id, submission_time):
+    cursor.execute(
+        sql.SQL(
+            """
+            INSERT INTO "planet-votes" (planet_id, planet_name, user_id, submission_time)
+            VALUES ({planet_id}, {planet_name}, {user_id}, {submission_time})
+            """
+        ).format(
+            planet_id = sql.Literal(planet_id),
+            planet_name = sql.Literal(planet_name),
+            user_id = sql.Literal(user_id),
+            submission_time = sql.Literal(submission_time),
+        )
+    )

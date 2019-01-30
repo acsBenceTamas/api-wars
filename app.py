@@ -2,20 +2,26 @@ from flask import Flask, render_template, request, session
 import json
 import data_manager
 import security
+from datetime import datetime
 
 
 app = Flask(__name__)
 
 app.secret_key = "_R€A-dO_cTa85%3(}Dwa4!'9aZl@@&ATzzUobB{@#<"
 
-
+##### LOGIN CONSTANTS #####
 ERROR_USERNAME_OR_PASSWORD_WRONG = -1
 ERROR_USERNAME_ALREADY_EXISTS = -2
 ERROR_USERNAME_HAS_INVALID_CHARACTERS = -3
 ERROR_INVALID_PASSWORD = -4
 ERROR_NOT_LOGGED_IN = -5
+ERROR_LOGIN_REQUIRED = -6
 SUCCESS_REGISTRATION = 1
 SUCCESS_LOGOUT = 2
+
+##### PLANETS CONSTANTS #####
+ERROR_ALREADY_VOTED = -1
+SUCCESS_VOTE_ADDED = 1
 
 
 @app.route('/')
@@ -29,7 +35,23 @@ def list_planets():
     if request.args:
         if request.args["page"]:
             page = int(request.args["page"])
+
     return render_template('list_planets.html', page=page, username=session.get("username"))
+
+
+@app.route('/upvote-planet/', methods=["POST"])
+def upvote_planet():
+    if session.get("user_id"):
+        try:
+            data_manager.make_vote(int(request.form["planet_id"]), request.form["planet_name"], session["user_id"], datetime.now())
+            print("successful vote")
+            return json.dumps(SUCCESS_VOTE_ADDED)
+        except:
+            print("already voted")
+            return json.dumps(ERROR_ALREADY_VOTED)
+    else:
+        print("not logged in")
+        return  json.dumps(ERROR_LOGIN_REQUIRED)
 
 
 @app.route('/login/', methods=["POST"])
@@ -39,7 +61,8 @@ def login():
         if security.verify_password(request.form["password"], user["password"]):
             session["user_id"] = user["id"]
             session["username"] = user["username"]
-            return json.dumps({"username": user["username"]})
+            return json.dumps({"username": user["username"], "user_id": user["id"]})
+
     return json.dumps(ERROR_USERNAME_OR_PASSWORD_WRONG)
 
 
@@ -52,7 +75,7 @@ def register():
                 if request.form["login"] == "true":
                     session["user_id"] = data_manager.get_user_by_username(request.form["username"])["id"]
                     session["username"] = request.form["username"]
-                    return json.dumps({"username": request.form["username"]})
+                    return json.dumps({"username": request.form["username"], "user_id": session["user_id"]})
                 else:
                     return json.dumps(SUCCESS_REGISTRATION)
             else:
@@ -65,11 +88,11 @@ def register():
 
 @app.route('/logout/')
 def logout():
-    print(session.get("user_id"))
     if session.get("user_id"):
         session.pop("user_id")
         session.pop("username")
         return json.dumps(SUCCESS_LOGOUT)
+
     return json.dumps(ERROR_NOT_LOGGED_IN)
 
 

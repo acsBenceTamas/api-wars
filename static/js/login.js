@@ -32,6 +32,7 @@ function handleLogin( response ) {
         document.getElementById('login-modal-error').classList.add('alert-danger')
     } else if (typeof response === "object") {
         document.getElementById('navbar-username').innerText = `Logged in as ${response.username.toString()}`;
+        document.getElementById('login-info').dataset.username = response.username.toString();
         document.getElementById('login-modal-username').value = "";
         document.getElementById('login-modal-password').value = "";
         $('#loginModal').modal('hide');
@@ -85,9 +86,12 @@ function logout() {
 }
 
 function handleLogout( response ) {
-    console.log(response);
     if (response === SUCCESS_LOGOUT) {
         document.getElementById('navbar-username').innerText = "Not logged in";
+        let loginInfo = document.getElementById('login-info');
+        loginInfo.removeAttribute("data-username");
+        loginInfo.removeAttribute("data-user-id");
+        loginInfo.dataset.loggedIn = JSON.stringify(false);
         $('#successful-logout').modal();
     } else if (response === ERROR_NOT_LOGGED_IN) {
         alert("Not currently logged in")
