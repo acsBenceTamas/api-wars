@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session
+from flask import Flask, render_template, request, session, redirect, url_for
 import json
 import data_manager
 import security
@@ -27,7 +27,7 @@ SUCCESS_VOTE_ADDED = 1
 
 @app.route('/')
 def index():
-    return render_template('index.html', username=session.get("username"))
+    return redirect(url_for('list_planets'))
 
 
 @app.route('/list-planets/')
