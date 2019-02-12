@@ -101,7 +101,7 @@ def logout():
 
 @app.route('/test/')
 def test():
-    return json.dumps(data_manager.get_vote_statistics())
+    return json.dumps(data_manager.test())
 
 
 if __name__ == '__main__':
