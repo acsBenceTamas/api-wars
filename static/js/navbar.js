@@ -11,6 +11,20 @@ function main()
 {
 }
 
+// ---TEST--- //
+
+function test() {
+    fetch('test')
+        .then((response) => response.json())
+        .then((variable) => handleTest(variable));
+}
+
+function handleTest(response) {
+    console.log(response)
+}
+
+// ---TEST--- //
+
 function submitLogin()
 {
     let form = new FormData();
