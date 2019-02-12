@@ -101,6 +101,7 @@ def logout():
 
 @app.route('/test/')
 def test():
+    return json.dumps(False)
     return json.dumps(data_manager.test(datetime.now()))
 
 
