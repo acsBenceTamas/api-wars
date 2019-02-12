@@ -99,10 +99,6 @@ def logout():
 
     return json.dumps(ERROR_NOT_LOGGED_IN)
 
-@app.route('/test/')
-def test():
-    return json.dumps(data_manager.test())
-
 
 if __name__ == '__main__':
     app.run()

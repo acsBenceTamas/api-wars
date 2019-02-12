@@ -11,23 +11,6 @@ function main()
 {
 }
 
-// ---TEST--- //
-
-function test() {
-    console.log("test started");
-    fetch('/test/')
-        .then((response) => response.json())
-        .then((variable) => handleTest(variable));
-    console.log("test sent");
-}
-
-function handleTest(response) {
-    console.log("test received");
-    console.log(response);
-}
-
-// ---TEST--- //
-
 function submitLogin()
 {
     let form = new FormData();
