@@ -101,10 +101,7 @@ def logout():
 
 @app.route('/test/')
 def test():
-    try:
-        return json.dumps(data_manager.test(datetime.now()))
-    except:
-        return json.dumps(False)
+    return json.dumps(data_manager.test(datetime.now()))
 
 
 if __name__ == '__main__':

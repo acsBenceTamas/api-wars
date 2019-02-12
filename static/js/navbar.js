@@ -15,7 +15,7 @@ function main()
 
 function test() {
     console.log("test started");
-    fetch('test')
+    fetch('/test/')
         .then((response) => response.json())
         .then((variable) => handleTest(variable));
     console.log("test sent");
