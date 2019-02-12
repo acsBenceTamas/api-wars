@@ -93,7 +93,7 @@ def get_vote_statistics(cursor):
     return cursor.fetchall()
 
 @connection_handler
-def test(cursor, time):
+def test(cursor):
     cursor.execute("INSERT INTO users (username, password) VALUES ('Pog','test');")
     # cursor.execute(
     #     sql.SQL(
