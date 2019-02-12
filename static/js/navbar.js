@@ -129,6 +129,7 @@ function handleVoteStatistics( response ) {
         console.log("No vote statistics available");
     } else if (typeof response === "object") {
         let voteStatisticsList = document.getElementById('vote-statistics-list');
+        for (let planet of voteStatisticsList.childNodes) {planet.remove()}
         let secondaryRow = true;
         for (let planet of response) {
             let row = document.createElement('div');
