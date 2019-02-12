@@ -101,8 +101,7 @@ def logout():
 
 @app.route('/test/')
 def test():
-    return json.dumps(False)
-    return json.dumps(data_manager.test(datetime.now()))
+    return json.dumps(data_manager.get_vote_statistics())
 
 
 if __name__ == '__main__':
